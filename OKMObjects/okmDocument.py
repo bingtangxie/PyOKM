@@ -1,5 +1,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 
 class OkmDocument(object):
@@ -12,12 +13,14 @@ class OkmDocument(object):
     # The information returned includes the id of the document in the manager.
 
     def uploadDocument(self, srcPath):
-        request = self.url.__add__('/create')
-        multipart_form_data = {
-            'file': open(srcPath, 'rb')
-        }
-        r = requests.post(request, files=multipart_form_data,
-                          headers={'Content-Type': 'application/json'})
+        request = self.url.__add__('/createSimple')
+        r = requests.post(request,
+                          files=(
+                              ('content', open(srcPath, 'rb')),
+                              ('docPath', '/okm:root/'.__add__(srcPath))),
+                          auth=self.auth,
+                          headers={'Accept': 'application/json'})
+        print(r.status_code)
 
 # We obtain the document selected in the source path and we save it with the destination name.
 
@@ -36,7 +39,7 @@ class OkmDocument(object):
         request = self.url.__add__('/getVersionHistory')
         r = requests.get(request, params=payload,
                          auth=self.auth,
-                         headers={'Content-Type': 'application/json'})
+                         headers={'Accept': 'application/json'})
         with open(''.__add__('versionHistory.json'), 'w') as file:
             file.write(r.text)
         assert r.status_code == 200
@@ -48,8 +51,8 @@ class OkmDocument(object):
         request = self.url.__add__('/getProperties')
         r = requests.get(request, params=payload,
                          auth=self.auth,
-                         headers={'Content-Type': 'application/json'})
-        with open(''.__add__('versionHistory.json'), 'w') as file:
+                         headers={'Accept': 'application/json'})
+        with open(''.__add__('properties.json'), 'w') as file:
             file.write(r.text)
         assert r.status_code == 200
 
@@ -70,7 +73,7 @@ class OkmDocument(object):
         r = requests.delete(request, params=payload, auth=self.auth)
         assert r.status_code == 204
 
-# We move a document from a sorcePath to another one.
+# We move a document from a sourcePath to another one.
 
     def moveDocument(self, srcPath, dstPath):
         self.copyDocument(srcPath, dstPath)
