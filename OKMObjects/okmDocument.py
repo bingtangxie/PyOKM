@@ -12,12 +12,12 @@ class OkmDocument(object):
 # We are able to upload a document to our system taking the path where it is locally.
     # The information returned includes the id of the document in the manager.
 
-    def uploadDocument(self, srcPath):
+    def uploadDocument(self, srcPath, dstName):
         request = self.url.__add__('/createSimple')
         r = requests.post(request,
                           files=(
                               ('content', open(srcPath, 'rb')),
-                              ('docPath', '/okm:root/'.__add__(srcPath))),
+                              ('docPath', '/okm:root/'.__add__(dstName))),
                           auth=self.auth,
                           headers={'Accept': 'application/json'})
         print(r.status_code)
